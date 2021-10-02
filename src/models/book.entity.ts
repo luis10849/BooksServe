@@ -12,6 +12,9 @@ export class BookEntity {
     title: string
 
     @Column({default: ''})
+    description: string
+
+    @Column({default: ''})
     url: string
 
     @Column({unique: true})

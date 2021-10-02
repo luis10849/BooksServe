@@ -1,19 +1,33 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { AppService } from './app.service';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { BookEntity } from './models/book.entity';
 
-@Controller()
+@Controller('books')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('books')
-  findAll(): Observable<BookEntity[]> {
+  @Get()
+  getAll(): Observable<BookEntity[]> {
     return this.appService.findAllBooks();
   }
 
+  @Get('id')
+  getBook(@Param('id') id: number): Observable<BookEntity> {
+    return this.appService.findBook(id);
+  }
+
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  createReview(@Body() review: CreateReviewDto) {
+    return this.appService.createReview(review);
+  }
+
   
-  @Get('books/filter')
+  @Get('filter')
+  @HttpCode(HttpStatus.OK)
   findSearchBooks(@Query() filterQuery): Observable<BookEntity[]> {
     const {search} = filterQuery;
     console.log(search)

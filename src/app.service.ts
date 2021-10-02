@@ -5,6 +5,9 @@ import { from, Observable } from 'rxjs';
 import { Like, Repository } from 'typeorm';
 import { BookEntity } from './models/book.entity';
 import { AuthorEntity } from './models/author.entity';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { ReviewEntity } from './models/review.entity';
+import { UserEntity } from './models/user.entity';
 
 @Injectable()
 export class AppService {
@@ -13,6 +16,10 @@ export class AppService {
     private readonly BookRepository: Repository<BookEntity>,
     @InjectRepository(AuthorEntity)
     private readonly AuthorRepository: Repository<AuthorEntity>,
+    @InjectRepository(ReviewEntity)
+    private readonly ReviewRepository: Repository<ReviewEntity>,
+    @InjectRepository(ReviewEntity)
+    private readonly UserRepository: Repository<UserEntity>,
     private httpService: HttpService,
   ) {}
 
@@ -21,6 +28,42 @@ export class AppService {
       this.BookRepository.find({
         relations: ['author', 'reviews'],
       }),
+    );
+  }
+
+  findBook(id: number): Observable<BookEntity> {
+    return from(
+      this.BookRepository.findOne(
+        {
+          id,
+        },
+        { relations: ['author', 'reviews'] },
+      ),
+    );
+  }
+
+  async createReview(review: CreateReviewDto) {
+    console.log(review);
+
+    const newReview = this.ReviewRepository.create({
+      book: {
+        id: review.bookId,
+      },
+      calification: review.calification,
+      comment: review.comment,
+      user: {
+        id: review.userId,
+      },
+    });
+
+    await this.ReviewRepository.save(newReview);
+    return from(
+      this.BookRepository.findOne(
+        {
+          id: review.bookId,
+        },
+        { relations: ['author', 'reviews'] },
+      ),
     );
   }
 
@@ -64,6 +107,7 @@ export class AppService {
             isbn: bookApi.isbns[0].isbn10,
             url: bookApi.book_image,
             author,
+            description: bookApi.description,
           });
           console.log(book);
           console.log(author);
