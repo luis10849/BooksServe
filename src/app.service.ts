@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { from, Observable } from 'rxjs';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { BookEntity } from './models/book.entity';
 import { AuthorEntity } from './models/author.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -18,7 +18,7 @@ export class AppService {
     private readonly AuthorRepository: Repository<AuthorEntity>,
     @InjectRepository(ReviewEntity)
     private readonly ReviewRepository: Repository<ReviewEntity>,
-    @InjectRepository(ReviewEntity)
+    @InjectRepository(UserEntity)
     private readonly UserRepository: Repository<UserEntity>,
     private httpService: HttpService,
   ) {}
@@ -71,10 +71,10 @@ export class AppService {
     return from(
       this.BookRepository.find({
         where: [
-          { title: Like(`%${search}%`) },
+          { title: ILike(`%${search}%`) },
           {
             author: {
-              name: Like(`%${search}%`),
+              name: ILike(`%${search}%`),
             },
           },
         ],
@@ -92,7 +92,14 @@ export class AppService {
 
     const books = await this.BookRepository.find();
     if (books.length == 0) {
+      
       response.subscribe(async (response) => {
+        const user = this.UserRepository.create({
+          id: 1,
+          name: 'User Test'
+        })
+        console.log(user)
+        await this.UserRepository.save(user)
         const data = response.data;
         console.log(data['results']['books'][0]);
         const books = data['results']['books'];

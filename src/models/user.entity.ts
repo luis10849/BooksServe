@@ -11,9 +11,6 @@ export class UserEntity {
     @Column()
     name: string;
 
-    @OneToMany(() => BookEntity, book => book.author)
-    books: BookEntity[];
-
     @OneToMany(() => ReviewEntity, review => review.user)
     reviews: ReviewEntity[];
 }
